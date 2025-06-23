@@ -8,7 +8,7 @@ MemoryAction* memoryActionsHead;
 void* allocWithMemoryAction(std::size_t size, MemoryAction** action) {
     void* ptr = std::malloc(size + sizeof(MemoryAction));
     if (ptr == NULL) {
-        throw std::bad_alloc{}; // TODO replace and put our own throw
+        throw std::bad_alloc{};
     }
     char* newLocation = static_cast<char*>(ptr) + sizeof(MemoryAction); // puts memoryAction behind the actual pointer.
     *action = static_cast<MemoryAction*>(ptr);                          // to cheat the compiler with casting.
