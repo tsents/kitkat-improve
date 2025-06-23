@@ -15,16 +15,14 @@ enum class ActionTypes : char {
  * A list of "Memory actions" that were executed. each one
  * consisting of the action (which new? or delete?), the size
  * requested (if it exists for the function) and the prev action.
- *
- * The reason for struct instead of class is that we won't be able
- * to case new! thus we won't be able to have a constructor and deconstructor,
- * and this class just presents a data scheme.
  */
-struct MemoryAction {
+class MemoryAction {
+public:
     MemoryAction* m_prev;
     MemoryAction* m_next;
     ActionTypes m_action;
     std::size_t m_size;
+    void printSummery();
 };
 
 /*
@@ -47,6 +45,15 @@ void* allocWithMemoryAction(std::size_t size, MemoryAction** action);
  * ptr [IN] The pointer to the start of the object, to free.
  */
 void freeWithMemoryAction(void* ptr);
+
+/*
+ * Returns the location of the memory action based on the ptr.
+ * usefull if we will change the location laster.
+ *
+ * ptr [IN] The pointer to the object.
+ * return   The location of the MemoryAction assosiated with it.
+ */
+MemoryAction* getMemoryAction(void* ptr);
 
 /*
  * The defualt new and delete operations. These are called

@@ -1,6 +1,7 @@
 #include "memory_listener.h"
-#include <cstdio>
+
 #include <cstdlib>
+#include <iostream>
 #include <new>
 
 MemoryAction* memoryActionsHead;
@@ -19,14 +20,14 @@ void* allocWithMemoryAction(std::size_t size, MemoryAction** action) {
         memoryActionsHead->m_next = (*action);
     }
     memoryActionsHead = (*action);
-
+    (*action)->m_size = size; // size is the original size.
     return static_cast<void*>(newLocation);
 }
 
 void freeWithMemoryAction(void* ptr) {
-    char* newLocation = static_cast<char*>(ptr) -
-                        sizeof(MemoryAction); // Changes the ptr to the true obeject start. with the memoryAction.
-    MemoryAction* action = static_cast<MemoryAction*>(static_cast<void*>(newLocation));
+    // Changes the ptr to the true obeject start. with the memoryAction.
+    char* newLocation = static_cast<char*>(ptr) - sizeof(MemoryAction);
+    MemoryAction* action = getMemoryAction(ptr);
     if (action->m_prev != NULL) {
         action->m_prev->m_next = action->m_next;
     }
@@ -36,36 +37,66 @@ void freeWithMemoryAction(void* ptr) {
     free(newLocation);
 }
 
+MemoryAction* getMemoryAction(void* ptr) {
+    char* newLocation = static_cast<char*>(ptr) - sizeof(MemoryAction);
+    MemoryAction* action = static_cast<MemoryAction*>(static_cast<void*>(newLocation));
+    return action;
+}
+
+void MemoryAction::printSummery() {
+    std::cerr << "Action ";
+    switch (this->m_action) {
+    case ActionTypes::NEW_SIZE:
+        std::cerr << "new ";
+        break;
+    case ActionTypes::NEW_BRACKET:
+        std::cerr << "new[] ";
+        break;
+    }
+    std::cerr << "size = " << this->m_size;
+}
+
 void* operator new(std::size_t size) {
-    std::printf("1) new(size_t), size = %zu\n", size);
     MemoryAction* action;
     void* ptr = allocWithMemoryAction(size, &action);
+    action->m_action = ActionTypes::NEW_SIZE;
+    action->printSummery();
+    std::cerr << std::endl;
     return ptr;
 }
 
 void* operator new[](std::size_t size) {
-    std::printf("2) new[](size_t), size = %zu\n", size);
     MemoryAction* action;
     void* ptr = allocWithMemoryAction(size, &action);
+    action->m_action = ActionTypes::NEW_BRACKET;
+    action->printSummery();
+    std::cerr << std::endl;
     return ptr;
 }
 
 void operator delete(void* ptr) noexcept {
-    std::puts("3) delete(void*)");
+    MemoryAction* action = getMemoryAction(ptr);
+    action->printSummery();
     freeWithMemoryAction(ptr);
 }
 
 void operator delete(void* ptr, std::size_t size) noexcept {
-    std::printf("4) delete(void*, size_t), size = %zu\n", size);
+    MemoryAction* action = getMemoryAction(ptr);
+    action->printSummery();
+    std::cerr << " deleted by delete(void*, size_t)" << std::endl;
     freeWithMemoryAction(ptr);
 }
 
 void operator delete[](void* ptr) noexcept {
-    std::puts("5) delete[](void* ptr)");
+    MemoryAction* action = getMemoryAction(ptr);
+    action->printSummery();
+    std::cerr << " deleted by delete[](void*)" << std::endl;
     freeWithMemoryAction(ptr);
 }
 
 void operator delete[](void* ptr, std::size_t size) noexcept {
-    std::printf("6) delete[](void*, size_t), size = %zu\n", size);
+    MemoryAction* action = getMemoryAction(ptr);
+    action->printSummery();
+    std::cerr << " deleted by delete[](void*, size_t)" << std::endl;
     freeWithMemoryAction(ptr);
 }
