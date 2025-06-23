@@ -48,10 +48,17 @@ void* allocWithMemoryAction(std::size_t size, MemoryAction** action);
  */
 void freeWithMemoryAction(void* ptr);
 
+/*
+ * The defualt new and delete operations. These are called
+ * by any new and delete used in the program, including objects.
+ *
+ * For example, new S[10] will call new[](sizeof(10) * 10);
+ * this DOESNT cover if some user adds additional overloads to the new operator.
+ * like new(3) S[10], which will call new[] with an additional argument
+ */
 void* operator new(std::size_t size);
 void* operator new[](std::size_t size);
 void operator delete(void* ptr) noexcept;
 void operator delete(void* ptr, std::size_t size) noexcept;
-
 void operator delete[](void* ptr) noexcept;
 void operator delete[](void* ptr, std::size_t size) noexcept;
