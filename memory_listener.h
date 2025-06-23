@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef> // needed here for size_t.
+#include <iostream>
 
 enum class ActionTypes : char {
     NEW_SIZE,
@@ -25,7 +26,9 @@ public:
     void* m_location;
     ActionTypes m_action;
     std::size_t m_size;
-    void printSummery();
+
+    void printSummery(std::ostream& stream);
+    static void printListSummery();
 };
 
 /*

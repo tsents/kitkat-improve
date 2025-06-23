@@ -1,7 +1,6 @@
 #include "memory_listener.h"
 
 #include <cstdlib>
-#include <iostream>
 #include <new>
 
 MemoryAction* memoryActionsHead;
@@ -44,24 +43,34 @@ MemoryAction* getMemoryAction(void* ptr) {
     return action;
 }
 
-void MemoryAction::printSummery() {
-    std::cerr << "Action ";
+void MemoryAction::printSummery(std::ostream& stream) {
+    stream << "Action ";
     switch (this->m_action) {
     case ActionTypes::NEW_SIZE:
-        std::cerr << "new ";
+        stream << "new ";
         break;
     case ActionTypes::NEW_BRACKET:
-        std::cerr << "new[] ";
+        stream << "new[] ";
         break;
     }
-    std::cerr << "size = " << this->m_size << " located at " << this->m_location;
+    stream << "size = " << this->m_size << " located at " << this->m_location;
+}
+
+void MemoryAction::printListSummery() {
+    std::cout << "Current allocation state (in reverse order)" << std::endl;
+    std::cout << ">>>>>>>>>" << std::endl;
+    for (MemoryAction* listRunner = memoryActionsHead; listRunner != NULL; listRunner = listRunner->m_prev) {
+        listRunner->printSummery(std::cout);
+        std::cout << std::endl;
+    }
+    std::cout << "<<<<<<<<<" << std::endl;
 }
 
 void* operator new(std::size_t size) {
     MemoryAction* action;
     void* ptr = allocWithMemoryAction(size, &action);
     action->m_action = ActionTypes::NEW_SIZE;
-    action->printSummery();
+    action->printSummery(std::cerr);
     std::cerr << std::endl;
     return ptr;
 }
@@ -70,34 +79,34 @@ void* operator new[](std::size_t size) {
     MemoryAction* action;
     void* ptr = allocWithMemoryAction(size, &action);
     action->m_action = ActionTypes::NEW_BRACKET;
-    action->printSummery();
+    action->printSummery(std::cerr);
     std::cerr << std::endl;
     return ptr;
 }
 
 void operator delete(void* ptr) noexcept {
     MemoryAction* action = getMemoryAction(ptr);
-    action->printSummery();
+    action->printSummery(std::cerr);
     freeWithMemoryAction(ptr);
 }
 
 void operator delete(void* ptr, std::size_t size) noexcept {
     MemoryAction* action = getMemoryAction(ptr);
-    action->printSummery();
+    action->printSummery(std::cerr);
     std::cerr << " deleted by delete(void*, size_t)" << std::endl;
     freeWithMemoryAction(ptr);
 }
 
 void operator delete[](void* ptr) noexcept {
     MemoryAction* action = getMemoryAction(ptr);
-    action->printSummery();
+    action->printSummery(std::cerr);
     std::cerr << " deleted by delete[](void*)" << std::endl;
     freeWithMemoryAction(ptr);
 }
 
 void operator delete[](void* ptr, std::size_t size) noexcept {
     MemoryAction* action = getMemoryAction(ptr);
-    action->printSummery();
+    action->printSummery(std::cerr);
     std::cerr << " deleted by delete[](void*, size_t)" << std::endl;
     freeWithMemoryAction(ptr);
 }
