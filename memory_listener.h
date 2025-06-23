@@ -21,7 +21,8 @@ enum class ActionTypes : char {
  * and this class just presents a data scheme.
  */
 struct MemoryAction {
-    const MemoryAction* m_prev;
+    MemoryAction* m_prev;
+    MemoryAction* m_next;
     ActionTypes m_action;
     std::size_t m_size;
 };
