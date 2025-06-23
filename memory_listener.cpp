@@ -21,6 +21,7 @@ void* allocWithMemoryAction(std::size_t size, MemoryAction** action) {
     }
     memoryActionsHead = (*action);
     (*action)->m_size = size; // size is the original size.
+    (*action)->m_location = newLocation;
     return static_cast<void*>(newLocation);
 }
 
@@ -53,7 +54,7 @@ void MemoryAction::printSummery() {
         std::cerr << "new[] ";
         break;
     }
-    std::cerr << "size = " << this->m_size;
+    std::cerr << "size = " << this->m_size << " located at " << this->m_location;
 }
 
 void* operator new(std::size_t size) {

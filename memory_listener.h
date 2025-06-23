@@ -15,11 +15,14 @@ enum class ActionTypes : char {
  * A list of "Memory actions" that were executed. each one
  * consisting of the action (which new? or delete?), the size
  * requested (if it exists for the function) and the prev action.
+ *
+ * this class is used mostly to represend a data scheme.
  */
 class MemoryAction {
 public:
     MemoryAction* m_prev;
     MemoryAction* m_next;
+    void* m_location;
     ActionTypes m_action;
     std::size_t m_size;
     void printSummery();
